@@ -1,0 +1,48 @@
+name: Bug Report
+description: Report a reproducible defect, crash, or protocol regression
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Provide a deterministic reproduction of the defect. Do not report security vulnerabilities here; use **Security -> Report a vulnerability** instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Defect Summary
+      description: Concise technical description of the failure mode.
+      placeholder: "RFCOMM channel closes unexpectedly during NVRAM read when payload exceeds 256 bytes."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      description: Exact commands, inputs, or hardware steps to trigger the defect.
+      placeholder: |
+        1. Connect target device
+        2. Run `./binary --flag`
+        3. Observe exit code / trace
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Expected vs Actual Output (Logs / Stack Trace)
+      description: Paste relevant console output, crash logs, or hex dumps.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment & Hardware Target
+      description: OS version, compiler/runtime version, commit SHA, and hardware revision (if applicable).
+      placeholder: "macOS 15.x arm64 / ESP32-S3 / commit abc1234"
+    validations:
+      required: true

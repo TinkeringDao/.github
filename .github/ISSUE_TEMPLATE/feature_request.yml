@@ -1,0 +1,41 @@
+name: Feature Request
+description: Propose a new capability, hardware target, or architectural improvement
+title: "[Feat]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What technical limitation or missing capability does this address?
+      placeholder: "Currently unable to export parsed NVRAM partitions to structured JSON."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Design / Interface
+      description: Describe the target CLI flags, API surface, wire format, or module boundary.
+      placeholder: "Add `--format json` flag to parser CLI."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: door
+    attributes:
+      label: Reversibility (Door Classification)
+      description: Is this change a two-way door (additive/revertible) or a one-way door (breaking change/schema mutation)?
+      options:
+        - "Two-Way Door (Additive / Easily Revertible)"
+        - "One-Way Door (Breaking Interface / Persistent State Change)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Acceptance & Verification Criteria
+      description: How should an engineer or autonomous agent verify the implementation?
+    validations:
+      required: false
