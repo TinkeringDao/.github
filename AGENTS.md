@@ -21,6 +21,15 @@ test -s AGENTS.md && test -s CLAUDE.md && test -s docs/agents/autonomous-pipelin
 python3 -c 'import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")]'
 ```
 
+### Verification Checklist & Pre-Merge Gate Commands
+
+| Gate | Requirement | Local Pre-Merge Command |
+| :--- | :--- | :--- |
+| **Gate 1: OPSEC & Zero-PII** | Zero personal identifiers, local usernames, postal codes, or coordinates in repo tree | `grep -rnI -iE "<FORBIDDEN_PII_PATTERN>" . --exclude-dir=.git --exclude="*autonomous-pr-review.yml"` (see workflow) |
+| **Gate 2: Cryptographic Signatures** | Every commit signed with `ED25519` SSH key (`verified == true`) | `git log -1 --show-signature` |
+| **Gate 3: Legal & Autonomous Spec** | `LEGAL.md` (with German Statutory Addendum), `LICENSE`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CODEOWNERS`, `AGENTS.md`, `CLAUDE.md`, `docs/agents/autonomous-pipeline.md` present | `grep -q "Addendum: German Statutory References" LEGAL.md && test -s docs/agents/autonomous-pipeline.md` |
+| **Gate 4: Workflow & Syntax** | All GitHub Actions reusable and standalone workflows parse cleanly | `python3 -c 'import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")]'` |
+
 ## Agent skills
 
 ### Issue tracker

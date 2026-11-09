@@ -23,6 +23,17 @@ Every Pull Request must follow [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PU
 - **Evidence:** Deterministic **Before** and **After** verification output (test runner transcripts, binary CLI output, packet traces, or UI screenshots).
 - **Merge Danger:** Explicit classification as a **One-Way Door** (irreversible NVRAM write, schema migration, breaking wire protocol change) or **Two-Way Door** (easily revertible code change), accompanied by a blast-radius summary.
 
+### Verification Checklist & Pre-Merge Gate Commands
+
+Every Pull Request is automatically audited by [`.github/workflows/autonomous-pr-review.yml`](./.github/workflows/autonomous-pr-review.yml) and [`docs/agents/autonomous-pipeline.md`](./docs/agents/autonomous-pipeline.md). Run these commands locally before opening or updating a PR:
+
+| Gate | Requirement | Local Pre-Merge Command |
+| :--- | :--- | :--- |
+| **Gate 1: OPSEC & Zero-PII** | Zero personal identifiers, local usernames, postal codes, or coordinates in repo tree | `grep -rnI -iE "<FORBIDDEN_PII_PATTERN>" . --exclude-dir=.git --exclude="*autonomous-pr-review.yml"` (see workflow) |
+| **Gate 2: Cryptographic Signatures** | Every commit signed with `ED25519` SSH key (`verified == true`) | `git log -1 --show-signature` |
+| **Gate 3: Legal & Autonomous Spec** | `LEGAL.md` (with German Statutory Addendum), `LICENSE`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CODEOWNERS`, `AGENTS.md`, `CLAUDE.md`, `docs/agents/autonomous-pipeline.md` present | `grep -q "Addendum: German Statutory References" LEGAL.md && test -s docs/agents/autonomous-pipeline.md` |
+| **Gate 4: Workflow & Syntax** | All GitHub Actions reusable and standalone workflows parse cleanly | `python3 -c 'import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")]'` |
+
 ## Issue Triage Lifecycle
 
 New issues enter with the `needs-triage` label and progress through five canonical states defined in [`docs/agents/triage-labels.md`](./docs/agents/triage-labels.md):
