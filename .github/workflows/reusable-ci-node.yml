@@ -1,0 +1,76 @@
+name: Reusable Node.js CI
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node.js version to install"
+        required: false
+        type: string
+        default: "22"
+      working-directory:
+        description: "Working directory for Node.js commands"
+        required: false
+        type: string
+        default: "."
+      install-command:
+        description: "Dependency installation command"
+        required: false
+        type: string
+        default: "if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; fi"
+      lint-command:
+        description: "Lint / typecheck command"
+        required: false
+        type: string
+        default: "if [ -f package.json ]; then npm run lint --if-present && npm run typecheck --if-present; fi"
+      test-command:
+        description: "Test execution command"
+        required: false
+        type: string
+        default: "if [ -f package.json ]; then npm test --if-present; fi"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  node-ci:
+    name: Node.js (${{ inputs.node-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WORKING_DIR: ${{ inputs.working-directory }}
+      INSTALL_CMD: ${{ inputs.install-command }}
+      LINT_CMD: ${{ inputs.lint-command }}
+      TEST_CMD: ${{ inputs.test-command }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          cd "$WORKING_DIR"
+          bash -eo pipefail -c "$INSTALL_CMD"
+
+      - name: Run lint and typecheck
+        run: |
+          set -euo pipefail
+          cd "$WORKING_DIR"
+          bash -eo pipefail -c "$LINT_CMD"
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          cd "$WORKING_DIR"
+          bash -eo pipefail -c "$TEST_CMD"
