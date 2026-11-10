@@ -36,6 +36,6 @@ body:
     id: verification
     attributes:
       label: Acceptance & Verification Criteria
-      description: How should an engineer or autonomous agent verify the implementation?
+      description: How should contributors verify the implementation?
     validations:
       required: false

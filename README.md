@@ -14,7 +14,7 @@
 > 7. **Radio Frequency (RF) Compliance:** `Directive 2014/53/EU (RED)`, `ETSI EN 300 220` / `ETSI EN 300 328`, `ERC/REC 70-03`, `Decision (EU) 2017/1483`, `FCC 47 C.F.R. Part 15 / Part 97`.
 > 8. **AS IS Warranty Disclaimer:** Provided `"AS IS"` without warranty of any kind.
 
-Account-wide community health standards, legal & regulatory compliance policies, reusable CI workflows, and autonomous agent configuration templates for [`TinkeringDao`](https://github.com/TinkeringDao) repositories.
+Account-wide community health standards, legal & regulatory compliance policies, and SHA-pinned reusable CI and security workflows for [`TinkeringDao`](https://github.com/TinkeringDao) repositories.
 
 ## Contents
 
@@ -24,15 +24,13 @@ Account-wide community health standards, legal & regulatory compliance policies,
 | [`LICENSE`](./LICENSE) | MIT License (`Copyright (c) 2026 TinkeringDao`) |
 | [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 Code of Conduct (`@TinkeringDao`) |
 | [`SECURITY.md`](./SECURITY.md) | Default vulnerability disclosure policy (`main` branch support, GitHub Security Advisories, safe-harbor research boundaries) |
-| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Contribution standards (clean-room compliance, atomic commits, branch-per-change, green CI, structured PRs) |
-| [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md) | Structured `/pr` template (Summary, Before/After Evidence, One-Way vs Two-Way Door classification) |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Contribution standards (clean-room compliance, signed atomic commits, green CI and security checks, squash-merge workflow) |
+| [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md) | Pull request template (Summary and Verification checklist) |
 | [`.github/ISSUE_TEMPLATE/bug_report.yml`](./.github/ISSUE_TEMPLATE/bug_report.yml) | YAML bug report form (`needs-triage` auto-labeling) |
 | [`.github/ISSUE_TEMPLATE/feature_request.yml`](./.github/ISSUE_TEMPLATE/feature_request.yml) | YAML feature request form (`needs-triage` auto-labeling) |
 | [`.github/workflows/reusable-ci-python.yml`](./.github/workflows/reusable-ci-python.yml) | Hardened `workflow_call` Python lint/test pipeline (SHA-pinned actions, read-only token) |
 | [`.github/workflows/reusable-ci-node.yml`](./.github/workflows/reusable-ci-node.yml) | Hardened `workflow_call` Node.js lint/typecheck/test pipeline (SHA-pinned actions, read-only token) |
-| [`docs/agents/issue-tracker.md`](./docs/agents/issue-tracker.md) | Matt Pocock `/triage`, `/to-tickets`, and `/wayfinder` GitHub issue tracker specification |
-| [`docs/agents/triage-labels.md`](./docs/agents/triage-labels.md) | Canonical 5-role triage label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) |
-| [`docs/agents/domain.md`](./docs/agents/domain.md) | Domain glossary (`GLOSSARY.md`) and ADR (`docs/adr/`) consumption rules |
+| [`.github/workflows/reusable-security.yml`](./.github/workflows/reusable-security.yml) | Hardened `workflow_call` secret-scanning, signature-verification, governance, and workflow security pipeline |
 
 ## Reusable Workflow Usage
 
@@ -54,4 +52,14 @@ jobs:
     uses: TinkeringDao/.github/.github/workflows/reusable-ci-node.yml@main
     with:
       node-version: "22"
+```
+
+### Security Gate
+
+```yaml
+jobs:
+  security:
+    uses: TinkeringDao/.github/.github/workflows/reusable-security.yml@main
+    secrets:
+      OPSEC_BLOCKLIST_REGEX: ${{ secrets.OPSEC_BLOCKLIST_REGEX }}
 ```
