@@ -44,11 +44,12 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_REPO: ${{ github.repository }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
         run: |
           set -euo pipefail
 
           # 1. Reject PEM / PKCS#8 / OpenSSH / PGP private key headers in tracked text files
-          if git grep -nI -E '-----BEGIN (RSA |DSA |EC |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY-----' -- \
+          if git grep -nI -E -e '-{5}BEGIN (RSA |DSA |EC |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY-{5}' -- \
             ':(exclude)third_party/**' ':(exclude)*.png' ':(exclude)*.jpg' ':(exclude)*.pdf'; then
             echo "ERROR: Private key header detected in tracked files." >&2
             exit 1
@@ -61,22 +62,23 @@ jobs:
             exit 1
           fi
 
-          # 3. Confidentiality blocklist check (fail-closed on same-repo runs)
-          IS_SAME_REPO="false"
-          if [[ "$EVENT_NAME" != "pull_request" || "$HEAD_REPO" == "$BASE_REPO" ]]; then
-            IS_SAME_REPO="true"
+          # 3. Confidentiality blocklist check (fail-closed except same-repo Dependabot PRs)
+          IS_DEPENDABOT_SAME_REPO="false"
+          if [[ "$EVENT_NAME" == "pull_request" && "$HEAD_REPO" == "$BASE_REPO" && "$PR_USER" == "dependabot[bot]" ]]; then
+            IS_DEPENDABOT_SAME_REPO="true"
           fi
-          if [[ "$IS_SAME_REPO" == "true" && -z "$OPSEC_BLOCKLIST_REGEX" ]]; then
-            echo "ERROR: Required secret OPSEC_BLOCKLIST_REGEX is missing or empty." >&2
+          if [[ -z "$OPSEC_BLOCKLIST_REGEX" && "$IS_DEPENDABOT_SAME_REPO" != "true" ]]; then
+            echo "ERROR: Required secret OPSEC_BLOCKLIST_REGEX is missing or unavailable for this event." >&2
             exit 1
           fi
           if [[ -n "$OPSEC_BLOCKLIST_REGEX" ]]; then
-            MATCH_LOCATIONS="$(grep -rnI -iE -- "$OPSEC_BLOCKLIST_REGEX" . \
+            MATCH_LOCATIONS="$(grep -rnI -iE \
               --exclude-dir=.git --exclude-dir=third_party \
               --exclude='*.hex' --exclude='*.uf2' --exclude='*.bin' --exclude='*.elf' \
               --exclude='*.so' --exclude='*.apk' --exclude='*.aab' --exclude='*.png' \
               --exclude='*.jpg' --exclude='*.jpeg' --exclude='*.pdf' --exclude='*.zip' \
-              --exclude='*.gz' --exclude='*.tar' | cut -d: -f1,2 || true)"
+              --exclude='*.gz' --exclude='*.tar' \
+              -e "$OPSEC_BLOCKLIST_REGEX" -- . | cut -d: -f1,2 || true)"
             if [[ -n "$MATCH_LOCATIONS" ]]; then
               printf 'ERROR: Restricted identifier detected at:\n%s\n' "$MATCH_LOCATIONS" >&2
               exit 1
