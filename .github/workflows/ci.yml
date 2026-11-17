@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate YAML workflows and templates
+        run: |
+          set -euo pipefail
+          ruby -ryaml -e 'Dir.glob([".github/workflows/*.yml", ".github/ISSUE_TEMPLATE/*.yml", ".github/dependabot.yml"]).each { |f| YAML.load_file(f) }'
+
+      - name: Verify community health and governance documents
+        run: |
+          set -euo pipefail
+          for req in \
+            LEGAL.md \
+            LICENSE \
+            SECURITY.md \
+            CODE_OF_CONDUCT.md \
+            CONTRIBUTING.md \
+            .github/PULL_REQUEST_TEMPLATE.md \
+            .github/CODEOWNERS; do
+            if [[ ! -s "$req" ]]; then
+              echo "ERROR: Required file '$req' is missing or empty." >&2
+              exit 1
+            fi
+          done
+          if ! grep -Fq "Addendum: German Statutory References" LEGAL.md; then
+            echo "ERROR: LEGAL.md is missing the German Statutory References Addendum." >&2
+            exit 1
+          fi
