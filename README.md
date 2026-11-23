@@ -1,3 +1,13 @@
+<div align="center">
+  <a href="https://tinkeringdao.dev">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/tinkeringdao-lockup-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="assets/tinkeringdao-lockup-light.png">
+      <img alt="TinkeringDao Labs" src="assets/tinkeringdao-lockup-dark.png" width="720">
+    </picture>
+  </a>
+</div>
+
 # TinkeringDao/.github
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
